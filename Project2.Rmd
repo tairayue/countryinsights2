@@ -1,0 +1,164 @@
+---
+title: "Project 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data
+```{r}
+# call packages
+library(tidyverse)
+library(openintro)
+library(factoextra)
+
+
+
+# save cia_factbook dataset
+data(cia_factbook)
+# display first six rows of dataset
+head(cia_factbook)
+
+# remove rows with NA values
+cia_clean <- cia_factbook %>%
+  na.omit()
+
+# make categorical variable
+#cia_clean$country_type <- as.factor(ifelse(cia_clean$life_exp_at_birth >= 75, "Developed", "Developing"))
+
+cia_clean$country_type <- as.factor(ifelse(cia_clean$life_exp_at_birth <= 66, 'Least Developed',
+                          ifelse(cia_clean$life_exp_at_birth > 74, 'More Developed',
+                          ifelse((cia_clean$life_exp_at_birth > 66 && cia_clean$life_exp_at_birth <= 74), 'Less Developed'))))
+
+cia_clean
+```
+
+## Title and Introduction
+Write a narrative introduction describing the dataset you have chosen, the variables and observations it contains, how it was acquired (cite your sources), and why it is interesting to you. Expand on potential relationships, trends, you may expect, if any. Also comment on any steps needed to make the data tidy and clean. 
+
+*The dataset chosen for this project is sourced from the openintro library in R. The name of the dataset is cia_factbook. It contains columns for the country name, country area, population, population growth rate, birth rate, death rate, life expectancy, internet users, infant mortality rate, maternal mortality rate, and net migration rate for the year 2014. This dataset is interesting because we will be able to compare and contrast different trends for countries based on their statistics. In particular, we would like to look at each country's population and birth/death rates, as well as their life expectancy and internet users.*
+
+
+## Exploratory Data Analysis
+Explore relationships between your main variables by creating a correlation matrix with univariate/bivariate graphs and correlation coefficients. 
+- Write a supporting paragraph describing which pairs of variables are the most/less correlated and any relationships/trends that are apparent. 
+
+```{r}
+# code
+ggplot(cia_clean, aes(x = maternal_mortality_rate, y = infant_mortality_rate)) +
+  geom_point()
+
+# find correlation between infant and maternal mortality
+cor(cia_clean$maternal_mortality_rate,cia_clean$infant_mortality_rate, use = "pairwise.complete.obs")
+
+# Build a correlation matrix between all numeric variables
+cia_num <- cia_clean %>%
+  select_if(is.numeric) 
+cor(cia_num, use = "pairwise.complete.obs")
+
+# Make it pretty using a heatmap with geom_tile!
+cor(cia_num, use = "pairwise.complete.obs") %>%
+  # Save as a data frame
+  as.data.frame %>%
+  # Convert row names to an explicit variable
+  rownames_to_column %>%
+  # Pivot so that all correlations appear in the same column
+  pivot_longer(-1, names_to = "other_var", values_to = "correlation") %>%
+  ggplot(aes(rowname, other_var, fill = correlation)) +
+  # Heatmap with geom_tile
+  geom_tile() +
+  # Change the scale to make the middle appear neutral
+  scale_fill_gradient2(low="red",mid="white",high="blue") +
+  # Overlay values
+  geom_text(aes(label = round(correlation,2)), color = "black", size = 4) +
+  # Give title and labels
+  labs(title = "Correlation matrix for the dataset msleep", x = "variable 1", y = "variable 2")
+
+
+# A package for building a correlation matrix with univariate and bivariate graphs
+# install.packages("psych", dependcies=TRUE)
+library(psych)
+pairs.panels(cia_num, 
+             method = "pearson", # correlation coefficient method
+             hist.col = "blue", # color of histogram 
+             smooth = FALSE, density = FALSE, ellipses = FALSE)
+```
+
+
+## Clustering
+Perform k-means or PAM clustering on at least three of your variables (3 is the bare minimum: using more/all of them will make this much more interesting)!  
+- Remember that you can incorporate categorical variables and perform clustering based on Gower dissimilarities:  convert character  variables  to  factors  in  R,  generate  Gower’s dissimilarity matrix on the data, and do PAM clustering on the dissimilarities. 
+- Include all relevant steps such as the number of clusters based on silhouette width. 
+- Visualize the clusters by showing all pairwise combinations of variables colored by cluster assignment (using ggpairs) AND/OR Visualize the clusters in a 2-dimension plot, using fviz_cluster for example (you could combine this section with the next section about dimensionality reduction).  
+- Discuss and interpret the clusters in terms of the original variables and observations, report some statistics about the clusters, what observation is at the center, the goodness of fit, etc. 
+
+```{r}
+# K-Means Clustering
+
+# Run in the console: install.packages("cluster")
+library(cluster)
+
+# create new df
+cia_3 <- cia_clean %>% 
+  select(maternal_mortality_rate, infant_mortality_rate, life_exp_at_birth) %>%
+  scale
+
+# Use the function kmeans to find 3 clusters
+kmeans_results <- kmeans(na.omit(cia_3),3)
+
+# Available components
+names(kmeans_results)
+
+# Let's visualize our data by final cluster assignment
+fviz_cluster(kmeans_results, data = cia_3)
+
+# Save cluster assignment as a column in your dataset
+cia_kmeans <- cia_clean %>%
+  mutate(cluster = as.factor(kmeans_results$cluster))
+head(cia_kmeans)
+
+# Let's visualize our data by final cluster assignment
+cia_kmeans %>%
+  ggplot(aes(maternal_mortality_rate, infant_mortality_rate, color=cluster)) +
+  geom_point()
+
+# Let's visualize our data by final cluster assignment
+cia_kmeans %>%
+  ggplot(aes(maternal_mortality_rate, infant_mortality_rate, color = cluster)) +
+  geom_point(aes(shape = country_type)) +
+  labs(title="Clustering of Maternal and Infant Mortality Rates")
+
+# Compare the cluster and species
+table(cia_kmeans$cluster, cia_kmeans$country_type)
+```
+
+
+## Dimensionality Reduction
+Perform PCA on at least three of your variables (3 is the bare minimum: using more/all of them will make this much more interesting)! 
+- Use a prcomp to find the principal components. 
+- Include all relevant steps such as the number of PCs based on variation explained. 
+- Visualize the observations using the first 2 PCs (using one of the fviz_ functions). 
+- Interpret the principal components, focusing on what it means to score low/high on each PC you retain, and report the total variation in your dataset explained by these PCs. 
+ 
+```{r}
+
+```
+
+
+## Classification and Cross-Validation
+Use  a  classifier,  (logistic  regression  or  k-Nearest Neighbor) to predict a binary variable (response) based on other variables in your dataset. 
+- Train the model to the entire dataset and then use it to get predictions for all observations. Build a ROC curve and check how well the classifier is doing with the value of AUC. 
+- Perform k-fold cross-validation with this same classifier. Get the average performance across your k folds. 
+- Discuss the results in a paragraph. How well does your classifier predict new observations? Do you see signs of overfitting? 
+ 
+```{r}
+```
+ 
+ 
+## Formatting. 
+Create the report using R Markdown, with headers for each section; include comments to the R code; include references (datasets, context). The final report is less than 20 pages. If working in a group, acknowledge how each member contributed to the project. 
+
+
+
