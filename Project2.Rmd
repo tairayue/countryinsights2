@@ -13,7 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(openintro)
 library(factoextra)
-
+library(psych)
+library(cluster)
+library(GGally)
 
 
 # save cia_factbook dataset
@@ -25,9 +27,7 @@ head(cia_factbook)
 cia_clean <- cia_factbook %>%
   na.omit()
 
-# make categorical variable
-#cia_clean$country_type <- as.factor(ifelse(cia_clean$life_exp_at_birth >= 75, "Developed", "Developing"))
-
+# make categorical variable for country type based on life expectancy at birth
 cia_clean$country_type <- as.factor(ifelse(cia_clean$life_exp_at_birth <= 66, 'Least Developed',
                           ifelse(cia_clean$life_exp_at_birth > 74, 'More Developed',
                           ifelse((cia_clean$life_exp_at_birth > 66 && cia_clean$life_exp_at_birth <= 74), 'Less Developed'))))
@@ -38,7 +38,7 @@ cia_clean
 ## Title and Introduction
 Write a narrative introduction describing the dataset you have chosen, the variables and observations it contains, how it was acquired (cite your sources), and why it is interesting to you. Expand on potential relationships, trends, you may expect, if any. Also comment on any steps needed to make the data tidy and clean. 
 
-*The dataset chosen for this project is sourced from the openintro library in R. The name of the dataset is cia_factbook. It contains columns for the country name, country area, population, population growth rate, birth rate, death rate, life expectancy, internet users, infant mortality rate, maternal mortality rate, and net migration rate for the year 2014. This dataset is interesting because we will be able to compare and contrast different trends for countries based on their statistics. In particular, we would like to look at each country's population and birth/death rates, as well as their life expectancy and internet users.*
+*The dataset chosen for this project is sourced from the openintro library in R. The name of the dataset is cia_factbook. It contains columns for the country name, country area, population, population growth rate, birth rate, death rate, life expectancy, internet users, infant mortality rate, maternal mortality rate, and net migration rate for the year 2014. There are rows with NA values so the dataset requires cleaning by removing those rows. In addition, a categorical variable "country type" can be made based off of the existing variable for life expectancy. This dataset is interesting because we will be able to compare and contrast different trends for countries based on their statistics. In particular, we would like to look at each country's population and birth/death rates, as well as their life expectancy and mortality rates. We expect to see higher life expectancy and lower mortality rates in more developed countries, and the opposite for less and least developed countries. As for birth and death rates, we expect to see lower rates for more developed countries, and higher ones for less and least developed countries.*
 
 
 ## Exploratory Data Analysis
@@ -46,45 +46,59 @@ Explore relationships between your main variables by creating a correlation matr
 - Write a supporting paragraph describing which pairs of variables are the most/less correlated and any relationships/trends that are apparent. 
 
 ```{r}
+<<<<<<< HEAD
+# create scatter plot for maternal mortality rate and infant mortality rate
+=======
 # comment
+>>>>>>> fae302e41af64bebbbeafa22170a7b0cef308fb6
 ggplot(cia_clean, aes(x = maternal_mortality_rate, y = infant_mortality_rate)) +
   geom_point()
+```
 
-# find correlation between infant and maternal mortality
+```{r}
+# find correlation between infant and maternal mortality rates
 cor(cia_clean$maternal_mortality_rate,cia_clean$infant_mortality_rate, use = "pairwise.complete.obs")
+```
 
-# Build a correlation matrix between all numeric variables
+```{r}
+# create dataframe from cia_clean with only numeric variables
 cia_num <- cia_clean %>%
   select_if(is.numeric) 
-cor(cia_num, use = "pairwise.complete.obs")
 
-# Make it pretty using a heatmap with geom_tile!
+# build a correlation matrix between all numeric variables
+cor(cia_num, use = "pairwise.complete.obs")
+```
+
+```{r}
+# create a heatmap with geom_tile
 cor(cia_num, use = "pairwise.complete.obs") %>%
-  # Save as a data frame
+  # save as a data frame
   as.data.frame %>%
-  # Convert row names to an explicit variable
+  # convert row names to an explicit variable
   rownames_to_column %>%
-  # Pivot so that all correlations appear in the same column
+  # pivot so that all correlations appear in the same column
   pivot_longer(-1, names_to = "other_var", values_to = "correlation") %>%
   ggplot(aes(rowname, other_var, fill = correlation)) +
-  # Heatmap with geom_tile
+  # create heatmap with geom_tile
   geom_tile() +
-  # Change the scale to make the middle appear neutral
+  # change the scale to make the middle appear neutral
   scale_fill_gradient2(low="red",mid="white",high="blue") +
-  # Overlay values
+  # overlay values
   geom_text(aes(label = round(correlation,2)), color = "black", size = 4) +
-  # Give title and labels
-  labs(title = "Correlation matrix for the dataset msleep", x = "variable 1", y = "variable 2")
+  # add title and axis labels
+  labs(title = "Correlation Matrix for cia_factbook Numeric Variables", x = "variable 1", y = "variable 2") + 
+  # rotate x-axis labels to make them more readable
+  theme(axis.text.x=element_text(angle=45,hjust=1)) 
+```
 
-
-# A package for building a correlation matrix with univariate and bivariate graphs
-# install.packages("psych", dependcies=TRUE)
-library(psych)
+```{r}
+# create correlation matrix with univariate and bivariate graphs
 pairs.panels(cia_num, 
              method = "pearson", # correlation coefficient method
              hist.col = "blue", # color of histogram 
              smooth = FALSE, density = FALSE, ellipses = FALSE)
 ```
+*Using the correlation matrix and heat map, the variables with the strongest relationships can be determined. This should be determined to decide which variables to use for further analysis in this project. Looking at the heatmap and correlation coefficients between the variables, it seems that life expectancy at birth and infant mortality rate has the strongest negative correlation with a correlation coefficient of -0.89. This makes sense as if infant mortality is high, it is likely that the life expectancy of these infants would be low. The next highest correlation found was between maternal mortality rate and infant mortality rate with a correlation coefficient of 0.86. This also makes sense as generally, the factors that drive maternal mortality also drive infant mortality. There was also a strong negative correlation between maternal mortality rate and life expectancy at birth (which also makes sense due to the same reason supporting the correlation between infant mortality rate and life expectancy at birth). There were also high correlations found between internet users and area and internet users and population. However, these variables were not chosen for further analysis because these correlations and the fact that a higher population/country area leads to a higher number of internet users do not indicate anything about how developed a country is, which is the main goal of the clustering and classification portions of this project.*
 
 
 ## Clustering
@@ -95,45 +109,154 @@ Perform k-means or PAM clustering on at least three of your variables (3 is the 
 - Discuss and interpret the clusters in terms of the original variables and observations, report some statistics about the clusters, what observation is at the center, the goodness of fit, etc. 
 
 ```{r}
-# K-Means Clustering
+# STEP 1: choose number of clusters
 
-# Run in the console: install.packages("cluster")
-library(cluster)
+# find optimal number of clusters using within sum-of-squares (wss) method
+# minimize WSS while keeping a small number of clusters
+fviz_nbclust(cia_3, pam, method = "wss")
 
-# create new df
-cia_3 <- cia_clean %>% 
-  select(maternal_mortality_rate, infant_mortality_rate, life_exp_at_birth) %>%
+# find optimal number of clusters using silhouette method
+# check silhouette width
+fviz_nbclust(cia_3, pam, method = "silhouette")
+```
+*Using the WSS method (which measures the "compactness" of the clustering and minimizes it), it seems that the optimal number of clusters for the pam method is around 2 or 3. Using the silhouette method (which measures the quality of a clustering and determines how well each object lies within its cluster by considering both the WSS and the between-sum-of-squares), it is determined that the optimal number of clusters is 2.*
+
+# PAM Clustering
+```{r}
+# STEP 2: Use PAM method for clustering select variables (life expectancy, birth rate, death rate, maternal mortality rate, infant mortality rate)
+
+# select variables, scale, and create new dataframe
+cia_var <- cia_clean %>% 
+  select(-country_type, -country, -area, -internet_users, -net_migration_rate, -population, -population_growth_rate) %>%
   scale
 
-# Use the function kmeans to find 3 clusters
-kmeans_results <- kmeans(na.omit(cia_3),3)
+# apply a clustering algorithm
+pam_results <- cia_var %>%
+  pam(k = 2)
 
-# Available components
+# save cluster assignment as a column in dataset
+cia_pam <- cia_clean %>%
+  mutate(cluster = as.factor(pam_results$clustering))
+```
+
+```{r}
+# STEP 3: visualize clusters
+
+# make a plot of data colored by final cluster assignment (infant vs maternal mortality rates)
+cia_pam %>% 
+  ggplot(aes(maternal_mortality_rate, infant_mortality_rate, color = cluster)) +
+  geom_point(aes(shape = country_type)) +
+  labs(title="Clustering of Maternal and Infant Mortality Rates")
+
+# make a plot of data colored by final cluster assignment (death rate vs birth rate)
+cia_pam %>% 
+  ggplot(aes(birth_rate, death_rate, color = cluster)) +
+  geom_point(aes(shape = country_type)) +
+  labs(title="Clustering of Birth Rate and Death Rate")
+```
+*When viewing the scatter plot for infant vs maternal mortality rates, the clustering looks pretty accurate in that it clusters less and more developed countries into cluster 1 and least developed countries into cluster 2. This pattern with the clustering is also evident when the scatter plot displays death rate vs birth rate.*
+
+```{r}
+# STEP 4: evaluate clustering by calculating accuracy from cluster and country type
+
+# compare the cluster and species
+table(cia_pam$cluster, cia_pam$country_type)
+
+# calculate percentage of accuracy
+(47+42+83/177)
+```
+*The accuracy percentage of this clustering using the pam method is around 89.47%, when comparing the clustering with the actual country type variable from the dataset.*
+
+```{r}
+# STEP 5.1: interpret clustering by visualizing clusters by showing pairwise combinations of variables
+
+# show all pairwise combinations of variables colored by cluster assignment using ggpairs
+ggpairs(cia_pam, columns = c(3,4,5,7,8), aes(color = cluster))
+```
+
+```{r}
+# STEP 5.2: interpret clustering by creating summary statistic for each variable
+
+# find means of each variable for each cluster
+cia_pam %>%
+  group_by(cluster) %>%
+  summarise_at(c("birth_rate", "death_rate", "infant_mortality_rate", "life_exp_at_birth", "maternal_mortality_rate"), mean, na.rm = T)
+```
+
+# K-Means Clustering
+```{r}
+# STEP 1: choose number of clusters
+
+# find optimal number of clusters using within sum-of-squares (wss) method
+# minimize WSS while keeping a small number of clusters
+fviz_nbclust(cia_3, kmeans, method = "wss")
+
+# find optimal number of clusters using silhouette method
+# check silhouette width
+fviz_nbclust(cia_3, kmeans, method = "silhouette")
+```
+*Using the WSS method, it seems that the optimal number of clusters for the kmeans method is around 2 or 3. Using the silhouette method, it is determined that the optimal number of clusters is 2.*
+
+```{r}
+# STEP 2: Use kmeans to cluster selected variables
+
+# use kmeans function to find 2 clusters
+kmeans_results <- kmeans(na.omit(cia_var),2)
+
+# show available components
 names(kmeans_results)
 
-# Let's visualize our data by final cluster assignment
-fviz_cluster(kmeans_results, data = cia_3)
+# visualize data by final cluster assignment
+fviz_cluster(kmeans_results, data = cia_var)
 
-# Save cluster assignment as a column in your dataset
+# save cluster assignment as a column in dataset
 cia_kmeans <- cia_clean %>%
   mutate(cluster = as.factor(kmeans_results$cluster))
-head(cia_kmeans)
+```
 
-# Let's visualize our data by final cluster assignment
-cia_kmeans %>%
-  ggplot(aes(maternal_mortality_rate, infant_mortality_rate, color=cluster)) +
-  geom_point()
+```{r}
+# STEP 3: visualize clusters
 
-# Let's visualize our data by final cluster assignment
+# visualize data by final cluster assignment (death rate vs birth rate)
 cia_kmeans %>%
   ggplot(aes(maternal_mortality_rate, infant_mortality_rate, color = cluster)) +
   geom_point(aes(shape = country_type)) +
   labs(title="Clustering of Maternal and Infant Mortality Rates")
 
-# Compare the cluster and species
+# visualize data by final cluster assignment (infant vs maternal mortality rates)
+cia_kmeans %>%
+  ggplot(aes(maternal_mortality_rate, infant_mortality_rate, color = cluster)) +
+  geom_point(aes(shape = country_type)) +
+  labs(title="Clustering of Birth Rate and Death Rate")
+```
+*When viewing the scatter plot for infant vs maternal mortality rates, the kmeans method mostly clusters less and more developed countries into cluster 2 and least developed countries into cluster 1. This pattern with the clustering is also evident when the scatter plot displays death rate vs birth rate. This is the opposite clustering (1 vs 2) as the pam method.*
+
+```{r}
+# STEP 4: evaluate clustering by calculating accuracy from cluster and country type
+
+# compare the cluster and country type
 table(cia_kmeans$cluster, cia_kmeans$country_type)
+
+# calculate percentage of accuracy
+(47+43+83/177)
+```
+*The accuracy percentage of this clustering using the pam method is around 90.47%, when comparing the clustering with the actual country type variable from the dataset. This accuracy is slightly higher than the one provided by the pam method.*
+
+```{r}
+# STEP 5.1: interpret clustering by visualizing clusters by showing pairwise combinations of variables
+
+# show all pairwise combinations of variables colored by cluster assignment using ggpairs
+ggpairs(cia_kmeans, columns = c(3,4,5,7,8), aes(color = cluster))
 ```
 
+```{r}
+# STEP 5.2: interpret clustering by creating summary statistic for each variable
+
+# find means of each variable for each cluster
+cia_kmeans %>%
+  group_by(cluster) %>%
+  summarise_at(c("birth_rate", "death_rate", "infant_mortality_rate", "life_exp_at_birth", "maternal_mortality_rate"), mean, na.rm = T)
+```
 
 ## 4. Dimensionality Reduction
 Perform PCA on at least three of your variables (3 is the bare minimum: using more/all of them will make this much more interesting)! 
