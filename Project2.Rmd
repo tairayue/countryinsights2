@@ -46,7 +46,7 @@ Explore relationships between your main variables by creating a correlation matr
 - Write a supporting paragraph describing which pairs of variables are the most/less correlated and any relationships/trends that are apparent. 
 
 ```{r}
-# code
+# comment
 ggplot(cia_clean, aes(x = maternal_mortality_rate, y = infant_mortality_rate)) +
   geom_point()
 
