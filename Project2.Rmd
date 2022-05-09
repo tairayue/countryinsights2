@@ -135,7 +135,7 @@ table(cia_kmeans$cluster, cia_kmeans$country_type)
 ```
 
 
-## Dimensionality Reduction
+## 4. Dimensionality Reduction
 Perform PCA on at least three of your variables (3 is the bare minimum: using more/all of them will make this much more interesting)! 
 - Use a prcomp to find the principal components. 
 - Include all relevant steps such as the number of PCs based on variation explained. 
@@ -143,6 +143,7 @@ Perform PCA on at least three of your variables (3 is the bare minimum: using mo
 - Interpret the principal components, focusing on what it means to score low/high on each PC you retain, and report the total variation in your dataset explained by these PCs. 
  
 ```{r}
+
 
 ```
 
