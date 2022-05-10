@@ -267,6 +267,8 @@ cia_pam_scaled <- cia_pam %>%
   select(-country, -country_type, -cluster)
 pca <- cia_pam_scaled %>%
   prcomp()
+# percent of variances explained!
+fviz_eig(pca)
 fviz_cluster(pam_results, data = cia_clean)
 pca_df <- get_pca_var(pca)$coord %>% as.data.frame
 fviz_cluster(pam_results, data = cia_clean, shape = cia_clean$country_type) +
@@ -274,6 +276,7 @@ fviz_cluster(pam_results, data = cia_clean, shape = cia_clean$country_type) +
   guides(shape = guide_legend(title = "shape"))
 pam_results
 ```
+We use `fviz_eig` to plot pcs vs percent of variance explained and we see negligible explanation after two pcs, so we pick two pcs!
 The two pcs explain 73.6 + 18.7 = 92.3% of the total variation in our dataset
 High scores on PC1 mean the country has a high value for maternal mortality rate, very low values for area, internet users and population, and moderate values for birth rate, death rate, infant mortality rate, life expectancy at birth, net migration rate and population growth rate
 Low scores on PC1 mean the country has a low value for maternal mortality rate, very high values for area, internet users and population, and moderate values for everything else
