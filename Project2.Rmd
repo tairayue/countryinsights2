@@ -277,7 +277,7 @@ The two pcs explain 73.6 + 18.7 = 92.3% of the total variation in our dataset
 High scores on PC1 mean the country has a high value for maternal mortality rate, very low values for area, internet users and population, and moderate values for birth rate, death rate, infant mortality rate, life expectancy at birth, net migration rate and population growth rate
 Low scores on PC1 mean the country has a low value for maternal mortality rate, very high values for area, internet users and population, and moderate values for everything else
 High scores on PC2 mean the country has a high value for population but very low values for area and internet users and moderate values for everything else
-Low scoreso on PC2 mean the country has 
+Low scores on PC2 mean the country has a very low value for population but very high values for area and internet users, and moderate values for everything else
 
 ## Classification and Cross-Validation
 Use  a  classifier,  (logistic  regression  or  k-Nearest Neighbor) to predict a binary variable (response) based on other variables in your dataset. 
