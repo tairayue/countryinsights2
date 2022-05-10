@@ -267,6 +267,7 @@ cia_pam_scaled <- cia_pam %>%
   select(-country, -country_type, -cluster)
 pca <- cia_pam_scaled %>%
   prcomp()
+fviz_cluster(pam_results, data = cia_clean)
 pca_df <- get_pca_var(pca)$coord %>% as.data.frame
 fviz_cluster(pam_results, data = cia_clean, shape = cia_clean$country_type) +
   geom_point(aes(shape = cia_clean$country_type)) +
@@ -278,6 +279,9 @@ High scores on PC1 mean the country has a high value for maternal mortality rate
 Low scores on PC1 mean the country has a low value for maternal mortality rate, very high values for area, internet users and population, and moderate values for everything else
 High scores on PC2 mean the country has a high value for population but very low values for area and internet users and moderate values for everything else
 Low scores on PC2 mean the country has a very low value for population but very high values for area and internet users, and moderate values for everything else
+Thus the dimension of greatest variability distinguishes high maternal mortality rate sites from the others
+Given the shape or category we assign to the data points, it seems that high maternal mortality rate also distinguishes 
+least developed countries from less and more developed countries quite well
 
 ## Classification and Cross-Validation
 Use  a  classifier,  (logistic  regression  or  k-Nearest Neighbor) to predict a binary variable (response) based on other variables in your dataset. 
