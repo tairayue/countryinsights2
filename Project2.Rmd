@@ -17,7 +17,6 @@ library(psych)
 library(cluster)
 library(GGally)
 
-
 # save cia_factbook dataset
 data(cia_factbook)
 # display first six rows of dataset
@@ -263,10 +262,18 @@ Perform PCA on at least three of your variables (3 is the bare minimum: using mo
 - Interpret the principal components, focusing on what it means to score low/high on each PC you retain, and report the total variation in your dataset explained by these PCs. 
  
 ```{r}
-
-
+library(factoextra)
+cia_pam_scaled <- cia_pam %>%
+  select(-country, -country_type, -cluster)
+pca <- cia_pam_scaled %>%
+  prcomp()
+pca_df <- get_pca_var(pca)$coord %>% as.data.frame
+fviz_cluster(pam_results, data = cia_clean, shape = cia_clean$country_type) +
+  geom_point(aes(shape = cia_clean$country_type)) +
+  guides(shape = guide_legend(title = "shape"))
+pam_results
 ```
-
+The two pcs 
 
 ## Classification and Cross-Validation
 Use  a  classifier,  (logistic  regression  or  k-Nearest Neighbor) to predict a binary variable (response) based on other variables in your dataset. 
