@@ -1,14 +1,20 @@
 ---
 title: "Project 2"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Yue Taira, Tushar Kohli, Raju Kakarlapudi
+
 ## Data
-```{r}
+
+```{r echo = FALSE}
 # call packages
 library(tidyverse)
 library(openintro)
@@ -26,23 +32,29 @@ head(cia_factbook)
 cia_clean <- cia_factbook %>%
   na.omit()
 
+print(mean(cia_clean$life_exp_at_birth))
 # make categorical variable for country type based on life expectancy at birth
-cia_clean$country_type <- as.factor(ifelse(cia_clean$life_exp_at_birth <= 66, 'Least Developed',
-                          ifelse(cia_clean$life_exp_at_birth > 74, 'More Developed',
-                          ifelse((cia_clean$life_exp_at_birth > 66 && cia_clean$life_exp_at_birth <= 74), 'Less Developed'))))
+cia_clean$country_type <- as.factor(ifelse(cia_clean$life_exp_at_birth <= 70, 'Less Developed', 'More Developed'))
 
 cia_clean
 ```
 
 ## Title and Introduction
-Write a narrative introduction describing the dataset you have chosen, the variables and observations it contains, how it was acquired (cite your sources), and why it is interesting to you. Expand on potential relationships, trends, you may expect, if any. Also comment on any steps needed to make the data tidy and clean. 
 
-*Perhaps one the most popular international news stories over the past couple weeks has been regarding birth rates and population change in countries across the globe. In countries like Japan, population growth rate has seen a steady decline, leading some to worry the nation may soon age and disappear. In contrast, Sub-Saharan African nations are set to see a six-fold increase in population. As a group we found the trends in global population and development to be highly interesting, leading us to the CIA Factbook. This dataset is sourced from the openintro library in R. It contains columns for the country name, country area, population, population growth rate, birth rate, death rate, life expectancy, internet users, infant mortality rate, maternal mortality rate, and net migration rate for the year 2014. The original dataset has many rows with NA values so it requires cleaning by removing those rows. In addition, a categorical variable "country type" can be made based off of the existing variable for life expectancy. This dataset is interesting because we will be able to compare and contrast different trends for countries based on their statistics. We find this particular dataset to be interesting because it allows us to analyze the interconnected relationships between development as a nation and various statistics. In particular, we would like to look at each country's population and birth/death rates, as well as their life expectancy and mortality rates. We expect to see higher life expectancy and lower mortality rates in more developed countries, and the opposite for less and least developed countries. As for birth and death rates, we expect to see lower rates for more developed countries, and higher ones for less and least developed countries.*
-
+Perhaps one the most popular international news stories over the past couple weeks has been regarding birth rates and population change in countries across the globe.
+In countries like Japan, population growth rate has seen a steady decline, leading some to worry the nation may soon age and disappear.
+In contrast, Sub-Saharan African nations are set to see a six-fold increase in population.
+As a group we found the trends in global population and human development to be highly interesting, leading us to the CIA Factbook.
+This dataset is sourced from the openintro library in R.
+It contains columns for the country name, country area, population, population growth rate, birth rate, death rate, life expectancy, internet users, infant mortality rate, maternal mortality rate, and net migration rate for the year 2014.
+The original dataset has many rows with NA values so it requires cleaning by removing those rows.
+In addition, a categorical variable "country type" can be made based off of the existing variable for life expectancy.
+This dataset is interesting because we will be able to compare and contrast different developmental trends for countries based on their statistics.
+In particular, we would like to look at each country's population and birth/death rates, as well as their life expectancy and mortality rates.
+We expect to see higher life expectancy and lower mortality rates in more developed countries, and the opposite for less developed countries.
+As for birth and death rates, we expect to see lower rates for more developed countries, and higher ones for less developed countries.
 
 ## Exploratory Data Analysis
-Explore relationships between your main variables by creating a correlation matrix with univariate/bivariate graphs and correlation coefficients. 
-- Write a supporting paragraph describing which pairs of variables are the most/less correlated and any relationships/trends that are apparent. 
 
 ```{r}
 # create scatter plot for maternal mortality rate and infant mortality rate
@@ -93,14 +105,22 @@ pairs.panels(cia_num,
              hist.col = "blue", # color of histogram 
              smooth = FALSE, density = FALSE, ellipses = FALSE)
 ```
-*When analyzing the CIA Factbook dataset, we first wanted to verify which columns had the greatest relationships. Using the correlation matrix and heat map, we determined the variables with the strongest relationships. We thought these findings would be useful to decide which variables to use for further analysis in the project. Looking at the heatmap and correlation coefficients between the variables, we found that life expectancy at birth and infant mortality rate have the strongest negative correlation with a correlation coefficient of -0.89. This makes sense because if infant mortality is high, it is likely that the life expectancy of these infants would be low. The next highest correlation found was between maternal mortality rate and infant mortality rate with a correlation coefficient of 0.86. This also makes sense as generally, the factors that drive maternal mortality also drive infant mortality. There was also a strong negative correlation between maternal mortality rate and life expectancy at birth. Again, this aligns with previous observations as women generally have children at younger ages. Another reason these two correlations make sense is healthcare. Nations with good healthcare can generally support older populations with less mortality during childbirth. There were also high correlations found between internet users and area and internet users and population. However, these variables were not chosen for further analysis because these correlations and the fact that a higher population/country area leads to a higher number of internet users do not indicate anything about how developed a country is, which is the main goal of the clustering and classification portions of this project.*
+
+When analyzing the CIA Factbook dataset, we first wanted to verify which columns had the greatest relationships.
+Using the correlation matrix and heat map, we determined the variables with the strongest relationships.
+We thought these findings would be useful to decide which variables to use for further analysis in the project.
+Looking at the heatmap and correlation coefficients between the variables, we found that life expectancy at birth and infant mortality rate have the strongest negative correlation with a correlation coefficient of -0.89.
+This makes sense because if infant mortality is high, it is likely that the life expectancy of these infants would be low.
+The next highest correlation found was between maternal mortality rate and infant mortality rate with a correlation coefficient of 0.86.
+This also makes sense as generally, the factors that drive maternal mortality also drive infant mortality.
+There was also a strong negative correlation between maternal mortality rate and life expectancy at birth.
+Again, this aligns with previous observations as women generally have children at younger ages.
+Another reason these two correlations make sense is healthcare.
+Nations with good healthcare can generally support older populations with less mortality during childbirth.
+There were also high correlations found between internet users and area and internet users and population.
+However, these variables were not chosen for further analysis because these correlations and the fact that a higher population/country area leads to a higher number of internet users do not indicate anything about how developed a country is, which is the main goal of the clustering and classification portions of this project.
 
 ## Clustering
-Perform k-means or PAM clustering on at least three of your variables (3 is the bare minimum: using more/all of them will make this much more interesting)!  
-- Remember that you can incorporate categorical variables and perform clustering based on Gower dissimilarities:  convert character  variables  to  factors  in  R,  generate  Gower’s dissimilarity matrix on the data, and do PAM clustering on the dissimilarities. 
-- Include all relevant steps such as the number of clusters based on silhouette width. 
-- Visualize the clusters by showing all pairwise combinations of variables colored by cluster assignment (using ggpairs) AND/OR Visualize the clusters in a 2-dimension plot, using fviz_cluster for example (you could combine this section with the next section about dimensionality reduction).  
-- Discuss and interpret the clusters in terms of the original variables and observations, report some statistics about the clusters, what observation is at the center, the goodness of fit, etc. 
 
 ```{r}
 # STEP 1: choose number of clusters
@@ -118,9 +138,15 @@ fviz_nbclust(cia_var, pam, method = "wss")
 # check silhouette width
 fviz_nbclust(cia_var, pam, method = "silhouette")
 ```
-*After finding our variables of interest, the next step in our project was to cluster our data. To do that, we searched for the best number of clusters. Using the WSS method (which measures the "compactness" of the clustering and minimizes it), it seems that the optimal number of clusters for the PAM method is around 2 or 3. We then implemented the silhouette method (which measures the quality of a clustering and determines how well each object lies within its cluster by considering both the WSS and the between-sum-of-squares), determining that the optimal number of clusters was indeed 2. Having found a number of clusters, we then moved on to clustering the data using the PAM method.*
+
+After finding our variables of interest, the next step in our project was to cluster our data.
+To do that, we searched for the best number of clusters.
+Using the WSS method (which measures the "compactness" of the clustering and minimizes it), it seems that the optimal number of clusters for the PAM method is around 2 or 3.
+We then implemented the silhouette method (which measures the quality of a clustering and determines how well each object lies within its cluster by considering both the WSS and the between-sum-of-squares), determining that the optimal number of clusters was indeed 2.
+Having found a number of clusters, we then moved on to clustering the data using the PAM method.
 
 # PAM Clustering
+
 ```{r}
 # STEP 2: Use PAM method for clustering select variables (life expectancy, birth rate, death rate, maternal mortality rate, infant mortality rate)
 
@@ -147,7 +173,13 @@ cia_pam %>%
   geom_point(aes(shape = country_type)) +
   labs(title="Clustering of Birth Rate and Death Rate")
 ```
-*After clustering the data into 2 clusters, we then created two plots, one displaying the relationship between maternal mortality and infant mortality and the other displaying birth rate vs death rate. In each plot, data points are shaped by country_type and colored by cluster. When viewing the scatter plots for infant vs maternal mortality rates, the clustering looks pretty accurate in that it clusters less and more developed countries into cluster 1 and least developed countries into cluster 2. This pattern with the clustering is also evident in the scatter plot for death rate vs birth rate. It was also interesting to see on both plots that the less developed nations mainly exist on the border between clusters 1 and 2. This was an exciting observation as it displays how the two clusters represent developed and underdeveloped nations.*
+
+Once we had clustered the data into 2 clusters, we then created two plots, one displaying the relationship between maternal mortality and infant mortality and the other displaying birth rate vs death rate.
+In each plot, data points are shaped by country_type and colored by cluster.
+When viewing the scatter plots for infant vs maternal mortality rates, the clustering looks pretty accurate in that it clusters more developed countries into cluster 1 and less developed countries into cluster 2.
+This pattern with the clustering is also evident in the scatter plot for death rate vs birth rate.
+Some countries were less developed in cluster 1 but they mainly existed on the border between clusters.
+This was an exciting observation as it displays how the two clusters represent developed and underdeveloped nations.
 
 ```{r}
 # STEP 4: evaluate clustering by calculating accuracy from cluster and country type
@@ -157,7 +189,8 @@ table(cia_pam$cluster, cia_pam$country_type)
 # calculate percentage of accuracy
 (47+42+83/177)
 ```
-*The accuracy percentage of this clustering using the pam method is around 89.47%, when comparing the clustering with the actual country type variable from the dataset.*
+
+The accuracy percentage of this clustering using the pam method is around 89.47%, when comparing the clustering with the actual country type variable from the dataset.
 
 ```{r}
 # STEP 5.1: interpret clustering by visualizing clusters by showing pairwise combinations of variables
@@ -174,22 +207,35 @@ cia_pam %>%
   group_by(cluster) %>%
   summarise_at(c("birth_rate", "death_rate", "infant_mortality_rate", "life_exp_at_birth", "maternal_mortality_rate"), mean, na.rm = T)
 ```
-*After interpreting the clusters created using the PAM method, one can see that the countries clustered in cluster 1 are mostly those determined to be Less and More Developed based on life expectancy at birth. Similarly, the countries in cluster 2 are mostly those in the Least Developed category. Looking at the summary statistics for each variable and the ggpairs scatterplot matrix, one can see that the average values for each variable is very different for each cluster. This is expected, as developed countries tend to have lower birth rates, death rates, and mortality rates, but higher life expectancy and vice versa for developing countries. For example, the average life expectancy at birth for countries in cluster 1 is around 75.38 while the average for countries in cluster 2 is around 58.64. The density plots in the ggpairs matrix show this trend, as countries in cluster 1 (indicated in red) tend to have life expectancy at birth higher than the median, while countries in cluster 2 (indicated in blue) have life expectancies less than the median. This divide is also evident for birth rate, as the density plots for each cluster are on either side of the median. The cluster 1 plot is left-skewed, meaning it has lower average birth rates than the median, while the cluster 2 plot is right-skewed, meaning it has higher average birth rates than the median. This trend is also true, in the sense that cluster 2 is more right-skewed than cluster 1, for death rate and infant and maternal mortality rates. The variables that showed strong negative or positive correlations with each other also showed those trends in the scatter plots and correlation coefficients in the ggpairs matrix. For next steps, it could be interesting to view the clustering when 3 clusters are created.*
 
+Upon interpreting the clusters created using the PAM method, one can see that the countries clustered in cluster 1 are mostly those determined to be More Developed based on life expectancy at birth.
+Similarly, the countries in cluster 2 are mostly those in the Less Developed category.
+Looking at the summary statistics for each variable and the ggpairs scatterplot matrix, one can see that the average values for each variable is very different for each cluster.
+This is expected, as developed countries tend to have lower birth rates, death rates, and mortality rates, but higher life expectancy and vice versa for developing countries.
+For example, the average life expectancy at birth for countries in cluster 1 is around 75.38 while the average for countries in cluster 2 is around 58.64.
+The density plots in the ggpairs matrix show this trend, as countries in cluster 1 (indicated in red) tend to have life expectancy at birth higher than the median, while countries in cluster 2 (indicated in blue) have life expectancies less than the median.
+This divide is also evident for birth rate, as the density plots for each cluster are on either side of the median.
+The cluster 1 plot is left-skewed, meaning it has lower average birth rates than the median, while the cluster 2 plot is right-skewed, meaning it has higher average birth rates than the median.
+This trend is also true, in the sense that cluster 2 is more right-skewed than cluster 1, for death rate and infant and maternal mortality rates.
+The variables that showed strong negative or positive correlations with each other also showed those trends in the scatter plots and correlation coefficients in the ggpairs matrix.
+For next steps, it could be interesting to view the clustering when 3 clusters are created.
 
 # K-Means Clustering
+
 ```{r}
 # STEP 1: choose number of clusters
 
 # find optimal number of clusters using within sum-of-squares (wss) method
 # minimize WSS while keeping a small number of clusters
-fviz_nbclust(cia_3, kmeans, method = "wss")
+fviz_nbclust(cia_var, kmeans, method = "wss")
 
 # find optimal number of clusters using silhouette method
 # check silhouette width
-fviz_nbclust(cia_3, kmeans, method = "silhouette")
+fviz_nbclust(cia_var, kmeans, method = "silhouette")
 ```
-*Using the WSS method, it seems that the optimal number of clusters for the kmeans method is around 2 or 3. Using the silhouette method, it is determined that the optimal number of clusters is 2.*
+
+Using the WSS method, it seems that the optimal number of clusters for the kmeans method is around 2 or 3.
+Using the silhouette method, it is determined that the optimal number of clusters is 2.
 
 ```{r}
 # STEP 2: Use kmeans to cluster selected variables
@@ -219,11 +265,14 @@ cia_kmeans %>%
 
 # visualize data by final cluster assignment (infant vs maternal mortality rates)
 cia_kmeans %>%
-  ggplot(aes(maternal_mortality_rate, infant_mortality_rate, color = cluster)) +
+  ggplot(aes(birth_rate, death_rate, color = cluster)) +
   geom_point(aes(shape = country_type)) +
   labs(title="Clustering of Birth Rate and Death Rate")
 ```
-*When viewing the scatter plot for infant vs maternal mortality rates, the kmeans method mostly clusters less and more developed countries into cluster 2 and least developed countries into cluster 1. This pattern with the clustering is also evident when the scatter plot displays death rate vs birth rate. This is the opposite clustering (1 vs 2) as the pam method.*
+
+When viewing the scatter plot for infant vs maternal mortality rates, the kmeans method mostly clusters more developed countries into cluster 2 and less developed countries into cluster 1.
+This pattern with the clustering is also evident when the scatter plot displays death rate vs birth rate.
+This is the opposite clustering (1 vs 2) as the pam method but still clusters similarly*.*
 
 ```{r}
 # STEP 4: evaluate clustering by calculating accuracy from cluster and country type
@@ -234,7 +283,9 @@ table(cia_kmeans$cluster, cia_kmeans$country_type)
 # calculate percentage of accuracy
 (47+43+83/177)
 ```
-*The accuracy percentage of this clustering using the pam method is around 90.47%, when comparing the clustering with the actual country type variable from the dataset. This accuracy is slightly higher than the one provided by the pam method.*
+
+The accuracy percentage of this clustering using the pam method is around 90.47%, when comparing the clustering with the actual country type variable from the dataset.
+This accuracy is slightly higher than the one provided by the pam method.
 
 ```{r}
 # STEP 5.1: interpret clustering by visualizing clusters by showing pairwise combinations of variables
@@ -251,54 +302,147 @@ cia_kmeans %>%
   group_by(cluster) %>%
   summarise_at(c("birth_rate", "death_rate", "infant_mortality_rate", "life_exp_at_birth", "maternal_mortality_rate"), mean, na.rm = T)
 ```
-*Using the K-Means method for clustering, countries categorized as Less Developed and More Developed based on life expectancy at birth were mostly clustered into cluster 2 and countries categorized as Least Developed were mostly clustered into cluster 1. These results are similar to those of the PAM method in the sense that the Less and More Developed countries were clustered together and the Least Developed countries were clustered together. The only difference between the clusters of the two methods was the cluster numbers were switched. The K-Means method produced similar results in that countries in cluster 2 (Less and More Developed countries) tend to have lower birth and death rates and lower maternal and infant mortality rates and higher life expectancies and the opposite for those in cluster 1 (Least Developed countries). The accuracy of the K-Means model was slightly higher than that of the PAM model. However, the results confirmed each other that these highly correlated variables are predictive of the how developed a country is based on their life expectancy. Because it is difficult to categorize countries by how developed they are, we have used these selected variables to cluster them and see trends that are similar for each cluster. The development of a country is difficult to quantify as so many factors affect it, but these clustering methods help to visualize the similarities between countries based on the variables that we selected.*
 
+Using the K-Means method for clustering, countries categorized as More Developed based on life expectancy at birth were mostly clustered into cluster 2 and countries categorized as Less Developed were mostly clustered into cluster 1.
+These results are similar to those of the PAM method in the sense that the More Developed countries were clustered together and the Less Developed countries were clustered together.
+The only difference between the clusters of the two methods was the cluster numbers were switched.
+The K-Means method produced similar results in that countries in cluster 2 (More Developed countries) tend to have lower birth and death rates and lower maternal and infant mortality rates and higher life expectancies and the opposite for those in cluster 1 (Less Developed countries).
+The accuracy of the K-Means model was slightly higher than that of the PAM model.
+However, the results confirmed each other that these highly correlated variables are predictive of the how developed a country is based on their life expectancy.
+Because it is difficult to categorize countries by how developed they are, we have used these selected variables to cluster them and see trends that are similar for each cluster.
+The development of a country is difficult to quantify as so many factors affect it, but these clustering methods help to visualize the similarities between countries based on the variables that we selected.
 
 ## 4. Dimensionality Reduction
-Perform PCA on at least three of your variables (3 is the bare minimum: using more/all of them will make this much more interesting)! 
-- Use a prcomp to find the principal components. 
-- Include all relevant steps such as the number of PCs based on variation explained. 
-- Visualize the observations using the first 2 PCs (using one of the fviz_ functions). 
-- Interpret the principal components, focusing on what it means to score low/high on each PC you retain, and report the total variation in your dataset explained by these PCs. 
- 
+
 ```{r}
 library(factoextra)
-cia_pam_scaled <- cia_pam %>%
-  select(-country, -country_type, -cluster)
-pca <- cia_pam_scaled %>%
+# we use all numeric variables
+pca <- cia_num %>%
+  # use prcomp to find the principal components
   prcomp()
-# percent of variances explained!
+# percent of variances explained! choose how many pcs to retain
 fviz_eig(pca)
-fviz_cluster(pam_results, data = cia_clean)
+# get the coefficients/loadings of each variable for each principal component (or dimension)
 pca_df <- get_pca_var(pca)$coord %>% as.data.frame
+# use fviz_cluster to to visualize the observations using the first two pcs
 fviz_cluster(pam_results, data = cia_clean, shape = cia_clean$country_type) +
   geom_point(aes(shape = cia_clean$country_type)) +
   guides(shape = guide_legend(title = "shape"))
 pam_results
 ```
+
 We use `fviz_eig` to plot pcs vs percent of variance explained and we see negligible explanation after two pcs, so we pick two pcs!
-The two pcs explain 73.6 + 18.7 = 92.3% of the total variation in our dataset
-High scores on PC1 mean the country has a high value for maternal mortality rate, very low values for area, internet users and population, and moderate values for birth rate, death rate, infant mortality rate, life expectancy at birth, net migration rate and population growth rate
-Low scores on PC1 mean the country has a low value for maternal mortality rate, very high values for area, internet users and population, and moderate values for everything else
-High scores on PC2 mean the country has a high value for population but very low values for area and internet users and moderate values for everything else
-Low scores on PC2 mean the country has a very low value for population but very high values for area and internet users, and moderate values for everything else
-Thus the dimension of greatest variability distinguishes high maternal mortality rate sites from the others
-Given the shape or category we assign to the data points, it seems that high maternal mortality rate also distinguishes 
-least developed countries from less and more developed countries quite well
+The two pcs explain 73.6 + 18.7 = 92.3% of the total variation in our dataset.
+High scores on PC1 mean the country has a high value for maternal mortality rate, very low values for area, internet users and population, and moderate values for birth rate, death rate, infant mortality rate, life expectancy at birth, net migration rate and population growth rate.
+Low scores on PC1 mean the country has a low value for maternal mortality rate, very high values for area, internet users and population, and moderate values for everything else.
+High scores on PC2 mean the country has a high value for population but very low values for area and internet users and moderate values for everything else.
+Low scores on PC2 mean the country has a very low value for population but very high values for area and internet users, and moderate values for everything else.
+Thus the dimension of greatest variability distinguishes high maternal mortality rate sites from the others.
+Given the shape or category we assign to the data points, it seems that high maternal mortality rate also distinguishes less developed countries from more developed countries quite well.
+We perform pca to reduce dimenionality of our dataset because two dimensions explain almost all the variation in our dataset.
+This narrows down the number of variables we need to consider to only two that are most predictive of how developed a country is: maternal mortality rate and population.
+Population less so, to a less degree because it seems that there are more less developed countries with high populations, but this division is not as stark as low and high maternal mortality rate.
 
 ## Classification and Cross-Validation
-Use  a  classifier,  (logistic  regression  or  k-Nearest Neighbor) to predict a binary variable (response) based on other variables in your dataset. 
-- Train the model to the entire dataset and then use it to get predictions for all observations. Build a ROC curve and check how well the classifier is doing with the value of AUC. 
-- Perform k-fold cross-validation with this same classifier. Get the average performance across your k folds. 
-- Discuss the results in a paragraph. How well does your classifier predict new observations? Do you see signs of overfitting? 
- 
+
+For classification, and cross validation, the binary response variable we chose to predict was country_type.
+The model is trained on all variables except country name.
+The classifier we utilized to accomplish this is k-Nearest Neighbors.
+
 ```{r}
+# KNN
+
+# Step 1: Prepare Dataset for training
+library(caret)
+library(plotROC)
+cia_clean <- cia_clean %>% mutate(country_type = ifelse(country_type == 'Less Developed', 0, 1))
+
+# Step 1: Train the Model
+knn_fit <- knn3(factor(country_type == 1, 
+                       levels = c("TRUE","FALSE")) ~ birth_rate + death_rate + infant_mortality_rate + internet_users + life_exp_at_birth + maternal_mortality_rate + net_migration_rate + population + population_growth_rate,
+                data = cia_clean, 
+                k = 5)
+
+kNN_cia <- cia_clean %>% 
+  mutate(proportion = predict(knn_fit, cia_clean)[,1])
+
+# Step 2: Build ROC curve
+ROC <- kNN_cia %>% ggplot() + 
+  geom_roc(aes(d = country_type, m = proportion), n.cuts = 0)
+ROC
+# calculate ROC 
+calc_auc(ROC)
 
 ```
+
+After training our classifier model and testing it on the whole dataset, we received an AUC of %95.81.
+This was a great accuracy as it was close to perfect.
+Our model accuracy was not surprising as all of our previous graphs displayed each Less and More developed nations in close proximity.
+
+```{r}
+# Step 3: Perform k-fold Cross-Validation
+set.seed(322)
+
+# your code goes below this line (make sure to edit comment)
+k = 10
+
+# Randomly order rows in the dataset
+data <- cia_clean[sample(nrow(cia_clean)), ] 
+
+# Create k folds from the dataset
+folds <- cut(seq(1:nrow(data)), breaks = k, labels = FALSE) 
+
+# Use a for loop to get diagnostics for each test set
+diags_k <- NULL
+
+for(i in 1:k){
+  # Create training and test sets
+  train <- data[folds != i, ] # all observations except in fold i
+  test <- data[folds == i, ]  # observations in fold i
+  
+  # Train model on training set (all but fold i)
+  knn_fit <- knn3(factor(country_type == 1, 
+                       levels = c("TRUE","FALSE")) ~ birth_rate + death_rate + infant_mortality_rate + internet_users + life_exp_at_birth + maternal_mortality_rate + net_migration_rate + population + population_growth_rate,
+                data = train, 
+                k = 5)
+
+  kNN_cia <- test %>% 
+    mutate(proportion = predict(knn_fit, test)[,1])
+  
+  # Step 2: Build ROC curve
+  ROC <- kNN_cia %>% ggplot() + 
+    geom_roc(aes(d = country_type, m = proportion), n.cuts = 0)
+  ROC
+  calc_auc(ROC)
  
- 
-## Formatting. 
-Create the report using R Markdown, with headers for each section; include comments to the R code; include references (datasets, context). The final report is less than 20 pages. If working in a group, acknowledge how each member contributed to the project. 
+  # Get diagnostics for fold i (AUC)
+  diags_k[i] <- calc_auc(ROC)$AUC
+}
+mean(diags_k)
+```
 
+Though model accuracy was satisfactory, we wanted to also ensure that our KNN classifier could effectively applied to potential nations not in our data or new data in later years.
+In order to verify this, we performed a 10-fold cross validation, choosing different portions of data to train and test in each fold.
+At the end of each fold, we saved the AUC.
+The final mean performance was calculated by averaging these AUC values across all the folds.
+Mean performance came out to %88.32.
+While this was still good, it was slightly worse than the original AUC calculated.
+This indicates that our model is likely over-fitting to the training data and cannot classify new observations as well as previously trained observations.
+Nevertheless, our overall accuracy was still very good and it proves the interconnected nature of life expectancy and all other variables.
 
+Overall, it was highly informative to analyze, cluster, and classify the CIA Factbook dataset.
+While no country is the same, it seems humanity as a whole follows similar trends as we develop and modernize.
 
+## Formatting.
+
+Create the report using R Markdown, with headers for each section; include comments to the R code; include references (datasets, context).
+The final report is less than 20 pages.
+If working in a group, acknowledge how each member contributed to the project.
+
+Yue - cleaning dataset, exploratory data analysis and clustering
+
+Tushar - dimensionality reduction using pca
+
+Raju - narrative introduction, classification and cross-validation
+
+dataset - openintro
